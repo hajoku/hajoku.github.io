@@ -27,7 +27,7 @@ Next, I took a 30% subset of the trainig data. This allowes me
 * to save time, because the algorithm already took a long processing time for the 30% subset, while still producing good results (as we will see later)  
  
 ```{r}
-trainingset = createDataPartition(pml_train$classe, p = 0.3, list = FALSE)
+trainingset = createDataPartition(pml_train$classe, p = 0.02, list = FALSE)
 pml_train_subset = pml_train[trainingset,]
 ```
 

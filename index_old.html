@@ -79,7 +79,7 @@ pml_train = select(pml_train_raw, classe,roll_belt, pitch_belt, yaw_belt,   tota
 <li>to evaluate the quality of the model (crossvalidation)</li>
 <li>to save time, because the algorithm already took a long processing time for the 30% subset, while still producing good results (as we will see later)</li>
 </ul>
-<pre class="r"><code>trainingset = createDataPartition(pml_train$classe, p = 0.3, list = FALSE)
+<pre class="r"><code>trainingset = createDataPartition(pml_train$classe, p = 0.02, list = FALSE)
 pml_train_subset = pml_train[trainingset,]</code></pre>
 <p>With this subset, I trained a random forest model with 5-fold crossvalidation using caret</p>
 <pre class="r"><code>t1_subset&lt;-train(classe~.,data=pml_train_subset,method=&quot;rf&quot;,trControl=trainControl(method=&quot;cv&quot;,number=5), prox=TRUE,allowParallel=TRUE)
@@ -91,14 +91,14 @@ print(t1_subset$finalModel)</code></pre>
 ##                      Number of trees: 500
 ## No. of variables tried at each split: 27
 ## 
-##         OOB estimate of  error rate: 1.87%
+##         OOB estimate of  error rate: 17.22%
 ## Confusion matrix:
-##      A    B    C   D    E class.error
-## A 1666    7    1   0    0 0.004778973
-## B   21 1104   12   3    0 0.031578947
-## C    0   16 1008   3    0 0.018500487
-## D    0    2   28 933    2 0.033160622
-## E    0    4    5   6 1068 0.013850416</code></pre>
+##     A  B  C  D  E class.error
+## A 101  2  2  5  2  0.09821429
+## B  12 52  7  3  2  0.31578947
+## C   2  3 60  4  0  0.13043478
+## D   0  2  5 56  2  0.13846154
+## E   0  8  3  4 58  0.20547945</code></pre>
 <p>As one can see, the model has a very low estimated error rate of about 2%. To further confirm the quality of the model, we use it to predict the classe of the datasets in the 70% testset:</p>
 <pre class="r"><code>p1_test = predict(t1_subset, pml_train[-trainingset,], type = &quot;raw&quot;)
 confusionMatrix(p1_test,pml_train[-trainingset,]$classe)</code></pre>
@@ -106,33 +106,33 @@ confusionMatrix(p1_test,pml_train[-trainingset,]$classe)</code></pre>
 ## 
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 3883   61    0    0    0
-##          B   18 2568   38    1    4
-##          C    1   27 2348   47   12
-##          D    0    1    9 2203   23
-##          E    4    0    0    0 2485
+##          A 5091  484   69   87   25
+##          B   93 2740  236   46  274
+##          C   69  323 2669  266  187
+##          D  215  105  350 2608  142
+##          E    0   69   29  144 2906
 ## 
 ## Overall Statistics
 ##                                           
-##                Accuracy : 0.9821          
-##                  95% CI : (0.9797, 0.9842)
+##                Accuracy : 0.8329          
+##                  95% CI : (0.8275, 0.8381)
 ##     No Information Rate : 0.2844          
 ##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
 ##                                           
-##                   Kappa : 0.9773          
-##  Mcnemar's Test P-Value : NA              
+##                   Kappa : 0.7884          
+##  Mcnemar's Test P-Value : &lt; 2.2e-16       
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9941   0.9665   0.9804   0.9787   0.9845
-## Specificity            0.9938   0.9945   0.9923   0.9971   0.9996
-## Pos Pred Value         0.9845   0.9768   0.9643   0.9852   0.9984
-## Neg Pred Value         0.9977   0.9920   0.9958   0.9958   0.9965
+## Sensitivity            0.9311   0.7364   0.7960   0.8277   0.8223
+## Specificity            0.9517   0.9581   0.9468   0.9495   0.9846
+## Pos Pred Value         0.8845   0.8085   0.7595   0.7626   0.9231
+## Neg Pred Value         0.9720   0.9381   0.9565   0.9656   0.9609
 ## Prevalence             0.2844   0.1935   0.1744   0.1639   0.1838
-## Detection Rate         0.2827   0.1870   0.1710   0.1604   0.1810
-## Detection Prevalence   0.2872   0.1914   0.1773   0.1628   0.1812
-## Balanced Accuracy      0.9940   0.9805   0.9864   0.9879   0.9921</code></pre>
+## Detection Rate         0.2648   0.1425   0.1388   0.1356   0.1511
+## Detection Prevalence   0.2994   0.1763   0.1828   0.1779   0.1637
+## Balanced Accuracy      0.9414   0.8473   0.8714   0.8886   0.9034</code></pre>
 <p>The confusion matix confirmes that the model gives very reliable predicitions.</p>
 
 
