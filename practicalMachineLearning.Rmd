@@ -1,0 +1,46 @@
+---
+title: "Predicting activity from accelerometer data"
+author: "hajoku"
+date: "November 22, 2015"
+output: html_document
+---
+
+This document describes how I used random trees to predict the type of activity a person was doing from accelerometer data.
+
+First, I read the input data from the training set and confined ít to the columns that are actually filled in the testing data (which I found out by looking at in Excel):
+
+```{r, echo=FALSE}
+filename_training = 'C:\\Users\\joschka.kupilas\\Documents\\Coursera\\Practical Machine Learning\\Assignment\\pml-training.csv'
+```
+
+
+```{r, message= FALSE}
+library(caret)
+library(dplyr)
+pml_train_raw = read.csv(filename_training)
+pml_train = select(pml_train_raw, classe,roll_belt,	pitch_belt,	yaw_belt,	total_accel_belt,	gyros_belt_x,	gyros_belt_y,	gyros_belt_z,	accel_belt_x,	accel_belt_y,	accel_belt_z,	magnet_belt_x,	magnet_belt_y,	magnet_belt_z,	roll_arm,	pitch_arm,	yaw_arm,	total_accel_arm,	gyros_arm_x,	gyros_arm_y,	gyros_arm_z,	accel_arm_x,	accel_arm_y,	accel_arm_z,	magnet_arm_x,	magnet_arm_y,	magnet_arm_z,	roll_dumbbell,	pitch_dumbbell,	yaw_dumbbell,	total_accel_dumbbell,	gyros_dumbbell_x,	gyros_dumbbell_y,	gyros_dumbbell_z,	accel_dumbbell_x,	accel_dumbbell_y,	accel_dumbbell_z,	magnet_dumbbell_x,	magnet_dumbbell_y,	magnet_dumbbell_z,	roll_forearm,	pitch_forearm,	yaw_forearm,	total_accel_forearm,	gyros_forearm_x,	gyros_forearm_y,	gyros_forearm_z,	accel_forearm_x,	accel_forearm_y,	accel_forearm_z,	magnet_forearm_x,	magnet_forearm_y,	magnet_forearm_z) 
+
+```
+Next, I took a 30% subset of the trainig data. This allowes me 
+
+* to evaluate the quality of the model (crossvalidation)
+* to save time, because the algorithm already took a long processing time for the 30% subset, while still producing good results (as we will see later)  
+ 
+```{r}
+trainingset = createDataPartition(pml_train$classe, p = 0.02, list = FALSE)
+pml_train_subset = pml_train[trainingset,]
+```
+
+With this subset, I trained a random forest model with 5-fold crossvalidation using caret 
+```{r, message = FALSE}
+t1_subset<-train(classe~.,data=pml_train_subset,method="rf",trControl=trainControl(method="cv",number=5), prox=TRUE,allowParallel=TRUE)
+print(t1_subset$finalModel)
+```
+
+As one can see, the model has a very low estimated error rate of about 2%. To further confirm the quality of the model, we use it to predict the classe of the datasets in the 70% testset:
+```{r}
+p1_test = predict(t1_subset, pml_train[-trainingset,], type = "raw")
+confusionMatrix(p1_test,pml_train[-trainingset,]$classe)
+```
+
+The confusion matix confirmes that the model gives very reliable predicitions.
